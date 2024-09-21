@@ -15,7 +15,7 @@ export default {
           },
           animation: {
             'slide-up': 'slide-up 1s ease-in-out',
-          }
+          },
     },
   },
   plugins: [],

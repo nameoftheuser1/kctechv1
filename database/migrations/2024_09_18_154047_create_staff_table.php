@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('staff', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->decimal('salary', 8, 2);
+            $table->date('payout_date');
             $table->timestamps();
         });
     }
@@ -22,6 +25,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('advance_salaries');
         Schema::dropIfExists('staff');
     }
 };

@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
+            $table->text('expense_description');
+            $table->decimal('amount', 8, 2);
+            $table->dateTime('date_time');
             $table->timestamps();
         });
     }
