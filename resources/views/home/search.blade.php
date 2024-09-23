@@ -3,7 +3,8 @@
     <div class="container mx-auto flex flex-col items-center">
         <div style="background-image: url('{{ asset('img/matabungkay-beach-batangas.jpg') }}')"
             class="h-48 w-full bg-cover bg-center absolute -z-50"></div>
-        <div class="mt-5 bg-gray-100 p-5 sm:w-1/2 sm:mx-4 border flex justify-center flex-col items-center shadow-lg rounded-lg">
+        <div
+            class="mt-5 bg-gray-100 p-5 sm:w-1/2 sm:mx-4 border flex justify-center flex-col items-center shadow-lg rounded-lg">
             <h1 class="text-2xl font-bold text-gray-700">Search Rooms</h1>
 
             <form id="search-form" method="POST" class=" w-full">
@@ -27,6 +28,8 @@
                     </div>
                 </div>
 
+                <span id="error-stay_type" class="text-red-500 text-sm mt-1"></span>
+
                 <div id="date-range-picker" class="flex items-center mt-4 justify-center">
                     <input id="datepicker-range-start" name="start" type="text"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -37,7 +40,11 @@
                         placeholder="Select date end">
                 </div>
 
-                <button type="submit" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md w-full">Check Rooms Availability</button>
+                <span id="error-start" class="text-red-500 text-sm mt-1"></span>
+                <span id="error-end" class="text-red-500 text-sm mt-1"></span>
+
+                <button type="submit" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md w-full">Check Rooms
+                    Availability</button>
             </form>
         </div>
 
@@ -60,9 +67,16 @@
 
             const form = document.getElementById('search-form');
             const roomsList = document.getElementById('rooms-list').querySelector('ul');
+            const errorStayType = document.getElementById('error-stay_type');
+            const errorStart = document.getElementById('error-start');
+            const errorEnd = document.getElementById('error-end');
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
+
+                errorStayType.textContent = '';
+                errorStart.textContent = '';
+                errorEnd.textContent = '';
 
                 const formData = new FormData(form);
                 const csrfToken = formData.get('_token');
@@ -79,25 +93,40 @@
                     .then(data => {
                         roomsList.innerHTML = '';
 
+                        if (data.errors) {
+                            if (data.errors.stay_type) {
+                                errorStayType.textContent = data.errors.stay_type[0];
+                            }
+                            if (data.errors.start) {
+                                errorStart.textContent = data.errors.start[0];
+                            }
+                            if (data.errors.end) {
+                                errorEnd.textContent = data.errors.end[0];
+                            }
+                            return;
+                        }
+
                         if (data.rooms && data.rooms.length > 0) {
                             data.rooms.forEach(room => {
                                 const roomItem = document.createElement('li');
                                 roomItem.classList.add('border', 'p-4', 'mb-2', 'w-full',
                                     'sm:w-1/2');
                                 roomItem.innerHTML = `
-                                <h3 class="font-semibold">${room.room_number} - ${room.room_type}</h3>
-                                <p>Price: ₱${room.price}</p>
-                                <p>Pax: ${room.pax}</p>
-                                <p>Stay Type: ${room.stay_type}</p>
-                            `;
+                            <h3 class="font-semibold">${room.room_number} - ${room.room_type}</h3>
+                            <p>Price: ₱${room.price}</p>
+                            <p>Pax: ${room.pax}</p>
+                            <p>Stay Type: ${room.stay_type}</p>
+                        `;
                                 roomsList.appendChild(roomItem);
                             });
                         } else {
                             roomsList.innerHTML =
-                                '<p>No rooms available for the selected criteria.</p>';
+                            '<p>No rooms available for the selected criteria.</p>';
                         }
                     })
-                    .catch(error => console.error('Error:', error));
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
             });
         });
     </script>

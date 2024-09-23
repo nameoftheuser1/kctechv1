@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Reservation;
 use App\Models\Room;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
 {
@@ -26,11 +27,17 @@ class HomeController extends Controller
 
     public function search(Request $request)
     {
-        $request->validate([
-            'stay_type' => 'required|in:day tour,overnight',
-            'start' => 'required|date',
-            'end' => 'required|date|after_or_equal:start',
+        $validator = Validator::make($request->all(), [
+            'stay_type' => ['required', 'in:day tour,overnight'],
+            'start' => ['required', 'date'],
+            'end' => ['required', 'date', 'after_or_equal:start'],
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+            ], 422);
+        }
 
         $rooms = Room::where('stay_type', $request->stay_type)
             ->where(function ($query) use ($request) {
