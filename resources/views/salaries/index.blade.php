@@ -1,6 +1,5 @@
 <x-layout>
     <x-sidebar>
-
         <div>
             @if (session('success'))
                 <x-flashMsg msg="{{ session('success') }}" />
@@ -19,47 +18,63 @@
         </div>
 
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+            <caption class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white">
+                Staff List
+                <p class="mt-1 text-sm font-normal text-gray-500">Click on a staff member's name to view more details about their salary.</p>
 
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500">
-                <caption class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white">
-                    Staff List
-                    <p class="mt-1 text-sm font-normal text-gray-500">Click on a staff member's name to view more details about their salary.</p>
+                <form id="search-form">
+                    <input type="text" name="search" id="search-input" placeholder="Search staff..." class="p-2 border text-sm rounded w-full focus:ring-pink-600 mb-1 mt-2" value="{{ request('search') }}" />
+                    <button type="submit" class="p-2 bg-blue-500 text-white rounded w-full text-sm hover:bg-blue-700">Search</button>
+                </form>
+            </caption>
 
-                    <form id="search-form">
-                        <input type="text" name="search" id="search-input" placeholder="Search staff..." class="p-2 border text-sm rounded w-full focus:ring-pink-600 mb-1 mt-2" value="{{ request('search') }}" />
-                        <button type="submit" class="p-2 bg-blue-500 text-white rounded w-full text-sm hover:bg-blue-700">Search</button>
-                    </form>
-                </caption>
+            <div class="hidden md:block">
+                <table class="min-w-full text-sm text-left rtl:text-right text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Name</th>
+                            <th scope="col" class="px-6 py-3">Salary</th>
+                            <th scope="col" class="px-6 py-3">Payout Date</th>
+                            <th scope="col" class="px-6 py-3"><span class="sr-only">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="staff-table-body">
+                        @foreach($staff as $member)
+                        <tr class="bg-white border-b hover:bg-gray-100 cursor-pointer" onclick="window.location='{{ route('staff.show', $member->id) }}'">
+                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ $member->name }}</th>
+                            <td class="px-6 py-4">₱{{ number_format($member->salary, 2) }}</td>
+                            <td class="px-6 py-4">{{ $member->payout_date->format('F j, Y') }}</td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="{{ route('staff.edit', $member->id) }}" class="font-medium text-blue-600 hover:underline" onclick="event.stopPropagation();">Edit</a>
+                                <button class="text-red-600 hover:underline ml-2" onclick="event.stopPropagation(); confirmDelete('delete-form-{{ $member->id }}', 'staff')">Delete</button>
+                                <form id="delete-form-{{ $member->id }}" action="{{ route('staff.destroy', $member->id) }}" method="POST" style="display: none;">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
-                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3">Name</th>
-                        <th scope="col" class="px-6 py-3">Salary</th>
-                        <th scope="col" class="px-6 py-3">Payout Date</th>
-                        <th scope="col" class="px-6 py-3"><span class="sr-only">Actions</span></th>
-                    </tr>
-                </thead>
-
-                <tbody id="staff-table-body">
-                    @foreach($staff as $member)
-                    <tr class="bg-white border-b hover:bg-gray-100 cursor-pointer" onclick="window.location='{{ route('staff.show', $member->id) }}'">
-                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{{ $member->name }}</th>
-                        <td class="px-6 py-4">₱{{ number_format($member->salary, 2) }}</td>
-                        <td class="px-6 py-4">{{ $member->payout_date->format('F j, Y') }}</td>
-                        <td class="px-6 py-4 text-right">
-                            <a href="{{ route('staff.edit', $member->id) }}" class="font-medium text-blue-600 hover:underline" onclick="event.stopPropagation();">Edit</a>
-
-                            <button class="text-red-600 hover:underline ml-2" onclick="event.stopPropagation(); confirmDelete('delete-form-{{ $member }}', 'staff')">Delete</button>
-
-                            <form id="delete-form-{{ $member }}" action="{{ route('staff.destroy', $member->id) }}" method="POST" style="display: none;">
+            <div class="md:hidden grid grid-cols-1 gap-4 p-4">
+                @foreach ($staff as $member)
+                    <div class="bg-white border rounded-lg p-4 shadow-md">
+                        <h3 class="text-lg font-semibold">Name: {{ $member->name }}</h3>
+                        <p><strong>Salary:</strong> ₱{{ number_format($member->salary, 2) }}</p>
+                        <p><strong>Payout Date:</strong> {{ $member->payout_date->format('F j, Y') }}</p>
+                        <div class="mt-2">
+                            <a href="{{ route('staff.edit', $member->id) }}" class="text-blue-600 hover:underline">Edit</a>
+                            <button class="text-red-600 hover:underline ml-2" onclick="confirmDelete('delete-form-{{ $member->id }}', 'staff')">Delete</button>
+                            <form id="delete-form-{{ $member->id }}" action="{{ route('staff.destroy', $member->id) }}" method="POST" style="display: none;">
                                 @csrf
                                 @method('DELETE')
                             </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
 
             <div class="p-4">
                 {{ $staff->links() }}
@@ -76,5 +91,4 @@
             initializeSearch('search-form', 'staff-table-body', '{{ route('staff.index') }}');
         });
     </script>
-
 </x-layout>

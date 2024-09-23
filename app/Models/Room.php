@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Room extends Model
@@ -12,11 +13,16 @@ class Room extends Model
 
     protected $fillable = [
         'room_number',
-        'room_type',
+        'category_id',
         'price',
         'pax',
         'stay_type',
     ];
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
 
     public function reservations(): BelongsToMany
     {

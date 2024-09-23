@@ -28,7 +28,7 @@
         </div>
         <!-- Image Section -->
         <div class="w-full mt-8 md:mt-0" data-aos="fade-left">
-            <img src="{{ asset('img/welcome.png') }}" alt="">
+            <img src="{{ asset('img/tables-sea-view.jpg') }}" class="rounded" alt="">
         </div>
     </section>
 

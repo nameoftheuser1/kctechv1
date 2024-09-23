@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Room;
 use App\Http\Requests\StoreRoomRequest;
 use App\Http\Requests\UpdateRoomRequest;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class RoomController extends Controller
@@ -19,7 +20,6 @@ class RoomController extends Controller
         $rooms = Room::query()
             ->when($search, function ($query, $search) {
                 $query->where('room_number', 'like', "%{$search}%")
-                    ->orWhere('room_type', 'like', "%{$search}%")
                     ->orWhere('price', 'like', "%{$search}%")
                     ->orWhere('pax', 'like', "%{$search}%")
                     ->orWhere('stay_type', 'like', "%{$search}%");
@@ -35,7 +35,8 @@ class RoomController extends Controller
      */
     public function create()
     {
-        return view('rooms.create');
+        $categories = Category::all();
+        return view('rooms.create', ['categories' => $categories]);
     }
 
     /**
@@ -45,11 +46,17 @@ class RoomController extends Controller
     {
         $fields = $request->validate([
             'room_number' => ['required', 'string', 'max:50'],
-            'room_type' => ['required', 'string', 'max:50'],
+            'category_name' => ['required', 'string', 'max:50'],
             'price' => ['required', 'numeric'],
             'pax' => ['required', 'integer'],
             'stay_type' => ['required', 'string', 'max:50'],
         ]);
+
+        $category = Category::firstOrCreate([
+            'name' => $fields['category_name'],
+        ]);
+
+        $fields['category_id'] = $category->id;
 
         Room::create($fields);
 
@@ -69,7 +76,8 @@ class RoomController extends Controller
      */
     public function edit(Room $room)
     {
-        return view('rooms.edit', ['room' => $room]);
+        $categories = Category::all();
+        return view('rooms.edit', ['room' => $room, 'categories' => $categories]);
     }
 
     /**
@@ -79,7 +87,7 @@ class RoomController extends Controller
     {
         $fields = $request->validate([
             'room_number' => ['required', 'string', 'max:50'],
-            'room_type' => ['required', 'string', 'max:50'],
+            'category_id' => ['required', 'exists:categories,id'],
             'price' => ['required', 'numeric'],
             'pax' => ['required', 'integer'],
             'stay_type' => ['required', 'string', 'max:50'],
